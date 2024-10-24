@@ -20,12 +20,15 @@ class App {
         const container = document.createElement('div');
         document.body.appendChild(container);
 
+        // Radius is used in various areas, so declare as a class property
+        this.planetRadius = 10;
+
         // Create a camera, in this case, a perspective camera so distant objects appear further - look at 'frustrum'
         // P1: FOV (degrees), P2: Aspect ratio (we use whole window so divide those two dimensions)
         // P3: Near value; objects nearer will be cut off, P4: Far value; objects will be cut off
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
         // Set position that frustrum extends from. Recall that WebGL has EUS perspective; X points east, Y points up, Z points south.
-        this.camera.position.set(0, 0, 30);
+        this.camera.position.set(0, 0, this.calculateCameraDistance());
 
         // Create scene, background will be white
         this.scene = new THREE.Scene();
@@ -49,7 +52,7 @@ class App {
         // Renderer creates a domElement that needs to be added to HTML container to be visible
         container.appendChild(this.renderer.domElement);
 
-        const starfield = getStarfield({ numStars: 2000 }); // Number of stars set to 2000
+        const starfield = getStarfield({ numStars: 3000 }); // Number of stars set to 2000
         this.scene.background = new THREE.Color(0x000000);
         this.scene.add(starfield);
 
@@ -67,10 +70,9 @@ class App {
                     bumpMap.minFilter = THREE.LinearFilter;
 
                     const resolution = 256;
-                    const radius = 10;
                     const displacementMultiplier = 0.04;
                     const bumpScale = 0.2;
-                    this.createPlanetGeometry(topoMap, colorMap, bumpMap, resolution, radius, displacementMultiplier, bumpScale);
+                    this.createPlanetGeometry(topoMap, colorMap, bumpMap, resolution, this.planetRadius, displacementMultiplier, bumpScale);
                 })
             })
         })
@@ -86,19 +88,6 @@ class App {
         this.renderer.setAnimationLoop(this.render.bind(this));
 
         window.addEventListener('resize', this.resize.bind(this));
-    }
-
-    resize() {
-        // On resize, we have to reset the camera aspect ratio and projection matrix
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        // Renderer needs to be resized to window size.
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    render() {
-        this.group.rotateY(0.001);
-        this.renderer.render(this.scene, this.camera);
     }
 
     createPlanetGeometry(topoMap, colorMap, bumpMap, resolution, radius, displacementMultiplier, bumpScale) {
@@ -184,6 +173,32 @@ class App {
         const y = radius * Math.sin(coordinate.latitude);
         const z = radius * Math.cos(coordinate.latitude) * Math.cos(coordinate.longitude);
         return new THREE.Vector3(x, y, z);
+    }
+
+    calculateCameraDistance() {
+        const planetRadius = this.planetRadius;
+        const aspectRatio = window.innerWidth / window.innerHeight;
+
+        if (aspectRatio < 1) {
+            // Portrait mode
+            return planetRadius * 5;
+        } else {
+            // Landscape orientation
+            return planetRadius * 3.5;
+        }
+    }
+
+    resize() {
+        // On resize, we have to reset the camera aspect ratio and projection matrix
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        // Renderer needs to be resized to window size.
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    render() {
+        this.group.rotateY(0.0005);
+        this.renderer.render(this.scene, this.camera);
     }
 }
 

@@ -2,7 +2,7 @@
 
 import * as THREE from "../libs/three.module.js";
 
-export default function createStarfield({ numStars = 500 } = {}) {
+export default function createStarfield({ numStars = 2000 } = {}) {
   
   // Generate random positions for stars
   function generateRandomStarPosition() {
@@ -36,7 +36,7 @@ export default function createStarfield({ numStars = 500 } = {}) {
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(starColors, 3));
 
   const starMaterial = new THREE.PointsMaterial({
-    size: Math.random() * 1 + 0.5,
+    size: Math.random() + 0.5,
     vertexColors: true,  // Use colors from geometry
     map: new THREE.TextureLoader().load('./textures/star.png'),
     transparent: true,
