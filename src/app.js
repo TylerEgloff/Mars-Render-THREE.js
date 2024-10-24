@@ -33,7 +33,7 @@ class App {
         directionalLight.position.set(5, 10, 7.5);
         this.scene.add(directionalLight);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
         this.scene.add(ambientLight);
 
         // Create renderer, WebGL for games. Antialias prevents jagged edges.
@@ -52,15 +52,19 @@ class App {
         // Might remove if no way to implement loading bar with TextureLoader
         const loader = new THREE.TextureLoader();
         // Topo map was horizontally translated to correct the longitude. Otherwise, the custom geometry won't align with texture
-        loader.load('./textures/mars_topo.png', (topoMap) => {
-            loader.load('./textures/mars_color.jpg', (colorMap) => {
-                topoMap.minFilter = THREE.LinearFilter; // Smooth sampling
-                colorMap.minFilter = THREE.LinearFilter;
-
-                const resolution = 128;
-                const radius = 10;
-                const displacementMultiplier = 0.05;
-                this.createPlanetGeometry(topoMap, colorMap, resolution, radius, displacementMultiplier);
+        loader.load('./textures/mars_topo4k.jpg', (topoMap) => {
+            loader.load('./textures/mars_color4k.jpg', (colorMap) => {
+                loader.load('./textures/mars_bump4k.jpg', (bumpMap) => {
+                    topoMap.minFilter = THREE.LinearFilter; // Smooth sampling
+                    colorMap.minFilter = THREE.LinearFilter;
+                    bumpMap.minFilter = THREE.LinearFilter;
+    
+                    const resolution = 256;
+                    const radius = 10;
+                    const displacementMultiplier = 0.04;
+                    const bumpScale = 0.2;
+                    this.createPlanetGeometry(topoMap, colorMap, bumpMap, resolution, radius, displacementMultiplier, bumpScale);
+                })
             })
         })
 
@@ -90,7 +94,7 @@ class App {
         this.renderer.render(this.scene, this.camera);
     }
 
-    createPlanetGeometry(topoMap, colorMap, resolution, radius, displacementMultiplier) {
+    createPlanetGeometry(topoMap, colorMap, bumpMap, resolution, radius, displacementMultiplier, bumpScale) {
         const geometry = new THREE.SphereBufferGeometry(radius, resolution, resolution);
 
         // Draw the topo map on a temporary canvas
@@ -142,6 +146,8 @@ class App {
 
         const material = new THREE.MeshStandardMaterial({
             map: colorMap,
+            bumpMap: bumpMap,
+            bumpScale: bumpScale,
             wireframe: false
         });
 
