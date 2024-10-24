@@ -1,7 +1,6 @@
 /**
  * TODO:
  * Custom shader which exaggerates depth (possibly spatially accurate sun - maybe minimap in bottom left showing where planet is)
- * Background & possibly a glow around perimeter of planet
  * Look into warping at poles
  * Survey performance metrics
  * UI with variable and detail level controls - rotation speed, light intensity, 
@@ -11,6 +10,7 @@
 import * as THREE from '../libs/three.module.js';
 import { OrbitControls } from '../libs/OrbitControls.js';
 import { getFresnelMat } from '/src/getFresnelMat.js';
+import getStarfield from '/src/getStarfield.js'; 
 
 // need a bundler to import jpg. Use would be to allow await load for loading bar
 //import earthmap from "./textures/earthmap.jpg";
@@ -23,7 +23,7 @@ class App {
         // Create a camera, in this case, a perspective camera so distant objects appear further - look at 'frustrum'
         // P1: FOV (degrees), P2: Aspect ratio (we use whole window so divide those two dimensions)
         // P3: Near value; objects nearer will be cut off, P4: Far value; objects will be cut off
-        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 200);
+        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
         // Set position that frustrum extends from. Recall that WebGL has EUS perspective; X points east, Y points up, Z points south.
         this.camera.position.set(0, 0, 30);
 
@@ -48,6 +48,10 @@ class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         // Renderer creates a domElement that needs to be added to HTML container to be visible
         container.appendChild(this.renderer.domElement);
+
+        const starfield = getStarfield({ numStars: 2000 }); // Number of stars set to 2000
+        this.scene.background = new THREE.Color(0x000000);
+        this.scene.add(starfield);
 
         this.group = new THREE.Group();
         this.group.rotation.z = 25.2 / 360 * 2 * Math.PI;

@@ -39,7 +39,7 @@ function getFresnelMat({ rimHex = 0xff0077, facingHex = 0x000000 } = {}) {
 
   void main() {
     float f = clamp(vReflectionFactor, 0.0, 1.0);
-    float opacity = 0.3;
+    float opacity = 0.2;
     gl_FragColor = vec4(mix(color2, color1, vec3(f)), f * opacity); // Glow intensity based on fresnel effect
   }
   `;
