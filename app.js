@@ -7,10 +7,10 @@
  * Possible rover easter egg
  */
 
-import * as THREE from '../libs/three.module.js';
-import { OrbitControls } from '../libs/OrbitControls.js';
-import { getFresnelMat } from '/src/getFresnelMat.js';
-import getStarfield from '/src/getStarfield.js'; 
+import * as THREE from './libs/three.module.js';
+import { OrbitControls } from './libs/OrbitControls.js';
+import { getFresnelMat } from './src/getFresnelMat.js';
+import getStarfield from './src/getStarfield.js'; 
 
 // need a bundler to import jpg. Use would be to allow await load for loading bar
 //import earthmap from "./textures/earthmap.jpg";
