@@ -36,7 +36,7 @@ export default function createStarfield({ numStars = 2000 } = {}) {
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(starColors, 3));
 
   const starMaterial = new THREE.PointsMaterial({
-    size: Math.random() + 0.5,
+    size: 1.5,
     vertexColors: true,  // Use colors from geometry
     map: new THREE.TextureLoader().load('./textures/star.png'),
     transparent: true,
