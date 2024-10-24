@@ -1,13 +1,16 @@
 /**
  * TODO:
- * Try adding bump map to material
  * Custom shader which exaggerates depth (possibly spatially accurate sun - maybe minimap in bottom left showing where planet is)
  * Background & possibly a glow around perimeter of planet
- * Higher res images
+ * Look into warping at poles
+ * Survey performance metrics
+ * UI with variable and detail level controls - rotation speed, light intensity, 
+ * Possible rover easter egg
  */
 
 import * as THREE from '../libs/three.module.js';
 import { OrbitControls } from '../libs/OrbitControls.js';
+import { getFresnelMat } from '/src/getFresnelMat.js';
 
 // need a bundler to import jpg. Use would be to allow await load for loading bar
 //import earthmap from "./textures/earthmap.jpg";
@@ -58,7 +61,7 @@ class App {
                     topoMap.minFilter = THREE.LinearFilter; // Smooth sampling
                     colorMap.minFilter = THREE.LinearFilter;
                     bumpMap.minFilter = THREE.LinearFilter;
-    
+
                     const resolution = 256;
                     const radius = 10;
                     const displacementMultiplier = 0.04;
@@ -153,6 +156,15 @@ class App {
 
         const earthMesh = new THREE.Mesh(geometry, material);
         this.group.add(earthMesh);
+
+        // Add Fresnel glow
+        const fresnelMat = getFresnelMat({
+            rimHex: 0xff0077, // Pinkish-red glow
+            facingHex: 0x000000 // Inner color
+        });
+        const glowMesh = new THREE.Mesh(geometry, fresnelMat);
+        glowMesh.scale.setScalar(1.01);
+        this.group.add(glowMesh);
     }
 
     // Convert a point on the unit sphere to latitude and longitude (in radians), ref: https://github.com/SebLague/Geographical-Adventures
