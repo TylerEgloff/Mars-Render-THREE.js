@@ -3,11 +3,12 @@
  * Custom shader which exaggerates depth (possibly spatially accurate sun - maybe minimap in bottom left showing where planet is)
  * Look into warping at poles
  * Survey performance metrics
- * UI with variable and detail level controls - rotation speed, light intensity, 
  * Possible rover easter egg
+ * Rewrite Fresnel shader
  */
 
 import * as THREE from './libs/three.module.js';
+import { GUI } from './libs/dat.gui.module.js';
 import { OrbitControls } from './libs/OrbitControls.js';
 import { getFresnelMat } from './src/getFresnelMat.js';
 import getStarfield from './src/getStarfield.js'; 
@@ -17,11 +18,19 @@ import getStarfield from './src/getStarfield.js';
 
 class App {
     constructor() {
+        this.defaultParams = {
+            rotationY: 0.1,  // Normalized between 0 and 1, will scale in the code
+            displacementMultiplier: 0.05,
+            bumpScale: 0.25,
+        };
+        this.params = { ...this.defaultParams };
+
         const container = document.createElement('div');
         document.body.appendChild(container);
 
         // Radius is used in various areas, so declare as a class property
         this.planetRadius = 10;
+        this.rotationYScale = 0.002; // Scales normalized rotation value
 
         // Create a camera, in this case, a perspective camera so distant objects appear further - look at 'frustrum'
         // P1: FOV (degrees), P2: Aspect ratio (we use whole window so divide those two dimensions)
@@ -52,6 +61,8 @@ class App {
         // Renderer creates a domElement that needs to be added to HTML container to be visible
         container.appendChild(this.renderer.domElement);
 
+        this.initGUI();
+
         const starfield = getStarfield({ numStars: 3000 }); // Number of stars set to 2000
         this.scene.background = new THREE.Color(0x000000);
         this.scene.add(starfield);
@@ -69,10 +80,12 @@ class App {
                     colorMap.minFilter = THREE.LinearFilter;
                     bumpMap.minFilter = THREE.LinearFilter;
 
-                    const resolution = 256;
-                    const displacementMultiplier = 0.04;
-                    const bumpScale = 0.2;
-                    this.createPlanetGeometry(topoMap, colorMap, bumpMap, resolution, this.planetRadius, displacementMultiplier, bumpScale);
+                    this.topoMap = topoMap;
+                    this.colorMap = colorMap;
+                    this.bumpMap = bumpMap;
+
+                    const resolution = 512;
+                    this.createPlanetGeometry(topoMap, colorMap, bumpMap, resolution, this.planetRadius, this.params.displacementMultiplier, this.params.bumpScale);
                 })
             })
         })
@@ -188,6 +201,46 @@ class App {
         }
     }
 
+    initGUI() {
+        const gui = new GUI();
+        gui.domElement.style.position = 'absolute';
+        gui.domElement.style.top = '10px';
+        gui.domElement.style.right = '10px';
+        gui.domElement.style.width = '300px';
+
+        // Add normalized GUI controls and save references to each controller
+        this.rotationYController = gui.add(this.params, 'rotationY', 0, 1).name('Rotation Speed').onChange((value) => {
+            this.params.rotationY = value;
+        });
+
+        this.displacementController = gui.add(this.params, 'displacementMultiplier', 0, 0.5).name('Displacement Multiplier').onChange((value) => {
+            this.group.clear();
+            this.createPlanetGeometry(this.topoMap, this.colorMap, this.bumpMap, 512, this.planetRadius, value, this.params.bumpScale);
+        });
+
+        this.bumpScaleController = gui.add(this.params, 'bumpScale', 0, 1).name('Bump Scale').onChange((value) => {
+            this.group.clear();
+            this.createPlanetGeometry(this.topoMap, this.colorMap, this.bumpMap, 512, this.planetRadius, this.params.displacementMultiplier, value);
+        });
+
+        // Add a "Reset to Default" button
+        gui.add({ reset: () => this.resetParams() }, 'reset').name('Reset to Default');
+    }
+
+    resetParams() {
+        // Reset parameters to default values
+        Object.assign(this.params, this.defaultParams);
+
+        // Update geometry with default values
+        this.group.clear();
+        this.createPlanetGeometry(this.topoMap, this.colorMap, this.bumpMap, 512, this.planetRadius, this.params.displacementMultiplier, this.params.bumpScale);
+
+        // Update GUI display to reflect reset values
+        this.rotationYController.updateDisplay();
+        this.displacementController.updateDisplay();
+        this.bumpScaleController.updateDisplay();
+    }
+
     resize() {
         // On resize, we have to reset the camera aspect ratio and projection matrix
         this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -197,7 +250,7 @@ class App {
     }
 
     render() {
-        this.group.rotateY(0.0005);
+        this.group.rotateY(this.params.rotationY * this.rotationYScale);
         this.renderer.render(this.scene, this.camera);
     }
 }

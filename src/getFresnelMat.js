@@ -1,13 +1,13 @@
 import * as THREE from '../libs/three.module.js';
 
 // Creates Fresnel material with a pinkish-red glow
-function getFresnelMat({ rimHex = 0xff0077, facingHex = 0x000000 } = {}) {
+function getFresnelMat({ rimHex = 0xff0055, facingHex = 0x000000 } = {}) {
   const uniforms = {
     color1: { value: new THREE.Color(rimHex) },
     color2: { value: new THREE.Color(facingHex) },
     fresnelBias: { value: 0.3 },
-    fresnelScale: { value: 0.7 },
-    fresnelPower: { value: 4.0 },
+    fresnelScale: { value: 0.3 },
+    fresnelPower: { value: 1 },
   };
 
   const vs = `
