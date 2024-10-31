@@ -1,7 +1,7 @@
 # Mars Render with Three.js
 
 ## Overview
-This project renders a 3D model of Mars using Three.js along with NASA MOLA and MEDGR data. The model includes adjustable parameters for rotation speed, geometry displacement, and bump mapping.
+This project renders a 3D model of Mars using Three.js along with NASA MOLA and MEDGR data. The model includes adjustable parameters for rotation speed, geometry displacement, and bump mapping. Demo here: https://tyleregloff.github.io/Mars-Render-THREE.js/
 
 ## Showcase
 For this project, I implemented my own custom geometry algorithm. Showcased below are the results of this:
